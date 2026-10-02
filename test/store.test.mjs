@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { mkdtempSync, writeFileSync } from "node:fs";
+import { mkdtempSync, writeFileSync, readFileSync, unlinkSync } from "node:fs";
 import { resolve } from "node:path";
 import { randomBytes, scryptSync } from "node:crypto";
 import { createApp } from "../server.mjs";
@@ -219,6 +219,8 @@ test("persistent order lifecycle, authentication, validation and product managem
     const pixel = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+a5XcAAAAASUVORK5CYII=";
     const upload = await call("/api/admin/upload", {method:"POST",authenticated:true,body:{data:"data:image/png;base64,"+pixel}});
     assert.equal(upload.status,201);
+    await app.db.prepare("INSERT INTO metadata VALUES(?,?)").run("owner-credentials",readFileSync(resolve(dir,"admin.json"),"utf8"));
+    unlinkSync(resolve(dir,"admin.json"));
     await new Promise((r) => app.server.close(r));
     app = await createApp({ dataDir: dir, notifications: false });
     await new Promise((r) => app.server.listen(0, "127.0.0.1", r));
@@ -239,6 +241,7 @@ test("persistent order lifecycle, authentication, validation and product managem
       401,
     );
     assert.equal((await call("/api/products")).data.length, 8);
+    assert.equal((await call("/api/admin/login",{method:"POST",body:{email:"test@example.invalid",password}})).status,200);
   } finally {
     await new Promise((r) => app.server.close(r));
   }

@@ -388,8 +388,10 @@ export async function createApp({
         const b = await body(req);
         let config;
         try {
+          const owner = await db.prepare("SELECT value FROM metadata WHERE key='owner-credentials'").get();
           config = JSON.parse(
             process.env.ADMIN_CREDENTIALS ||
+              owner?.value ||
               readFileSync(resolve(dataDir, "admin.json"), "utf8"),
           );
         } catch {
