@@ -611,10 +611,13 @@ export async function createApp({
   });
   return { server, db };
 }
-if (
-  process.env.VERCEL ||
-  (process.argv[1] && resolve(process.argv[1]) === resolve("server.mjs"))
-) {
+let deployedApp;
+export default async function handler(req, res) {
+  deployedApp ||= createApp().catch((error) => { deployedApp = undefined; throw error; });
+  const app = await deployedApp;
+  app.server.emit("request", req, res);
+}
+if (!process.env.VERCEL && process.argv[1] && resolve(process.argv[1]) === resolve("server.mjs")) {
   const port = Number(process.env.PORT || 3000);
   const host = process.env.HOST || "127.0.0.1";
   (await createApp()).server.listen(port, host, () =>
