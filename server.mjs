@@ -13,7 +13,7 @@ import { products as seed } from "./seed.mjs";
 import { extendCatalogue } from "./catalogue-update.mjs";
 export async function createApp({
   dataDir = process.env.DATA_DIR || "data",
-  production = process.env.NODE_ENV === "production",
+  production = process.env.NODE_ENV === "production" || !!process.env.VERCEL,
   notifications = true,
 } = {}) {
   const db = openDatabase(dataDir);
