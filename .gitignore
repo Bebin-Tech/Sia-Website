@@ -1,0 +1,7 @@
+data/
+.env
+node_modules/
+public/uploads/
+test-output/
+public/build/
+.vercel/

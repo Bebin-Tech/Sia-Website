@@ -1,0 +1,117 @@
+{
+  "reviewedOn": "2026-10-02",
+  "profile": "https://www.instagram.com/siaa_sketchncraft__/",
+  "displayName": "siaa♡︎!!",
+  "handle": "siaa_sketchncraft__",
+  "bio": [
+    "🌷 Art-ing my way through life",
+    "~Sketch • Craft • Create ♡!!"
+  ],
+  "links": {
+    "youtube": "https://www.youtube.com/@siaa1228",
+    "pinterest": "https://pin.it/6ZG5mu2NQ"
+  },
+  "observations": [
+    {
+      "source": "https://www.instagram.com/siaa_sketchncraft__/reel/DdESAPCBrvv/",
+      "caption": "Recent bouquet creations 🎀",
+      "details": "Caption includes pipecleanerbouquet and pipecleanerflowers. Image shows blue and white flowers with blue wrapping and ribbon.",
+      "asset": "public/assets/bouquet.jpg"
+    },
+    {
+      "source": "https://www.instagram.com/siaa_sketchncraft__/reel/DdBtHBZBQQf/",
+      "caption": "Adrien in chibi version",
+      "details": "Caption identifies Miraculous fan art and chibi art.",
+      "asset": "public/assets/chibi.jpg"
+    },
+    {
+      "source": "https://www.instagram.com/siaa_sketchncraft__/reel/Dc_K1NThfMo/",
+      "caption": "One night i was bored in bed.....",
+      "details": "Caption tags pipe-cleaner crafts, bouquets, flower pots and keychains. Catalogue uses a general flower-craft description without asserting specific stock.",
+      "asset": "public/assets/flowers.jpg"
+    },
+    {
+      "source": "https://www.instagram.com/siaa_sketchncraft__/reel/DdocAn1Bsw5/",
+      "details": "Profile-grid image inspected visually: character illustration in progress with pencil outlines and coloured facial features. Individual caption not reviewed.",
+      "asset": "public/assets/sketch.jpg"
+    }
+  ],
+  "unverified": [
+    "Official business/trading name beyond profile display name",
+    "Prices and currency",
+    "Products offered for sale and current availability",
+    "Customisation services",
+    "Business email or phone",
+    "Delivery areas and timelines",
+    "Shipping charges",
+    "Returns policy",
+    "Payment gateway"
+  ],
+  "designInterpretation": "Pink accent, serif headings and sketchbook-like image framing are a proposed website direction inspired by the heart/tulip/ribbon tone, not a claim that these are official brand guidelines.",
+  "cataloguePolicy": "Descriptive labels; no invented prices. Request-based checkout subject to owner confirmation of price, availability, customisation and delivery.",
+  "expandedGallery": {
+    "reviewedOn": "2026-10-02",
+    "addedPhotos": 9,
+    "totalPhotos": 13,
+    "totalPieces": 9,
+    "products": [
+      {
+        "name": "Blue flower pot",
+        "category": "Crafts",
+        "source": "https://www.instagram.com/siaa_sketchncraft__/reel/DaaW2xCzf4r/",
+        "asset": "/assets/flower-pot.jpg"
+      },
+      {
+        "name": "Bunny pipe-cleaner dolls",
+        "category": "Crafts",
+        "source": "https://www.instagram.com/siaa_sketchncraft__/reel/DbdU58tTmXx/",
+        "asset": "/assets/craft-figure.jpg"
+      },
+      {
+        "name": "Little duck keychain",
+        "category": "Crafts",
+        "source": "https://www.instagram.com/siaa_sketchncraft__/reel/Db5okD0hyjW/",
+        "asset": "/assets/duck-craft.jpg"
+      },
+      {
+        "name": "Blue-haired character study",
+        "category": "Drawings",
+        "source": "https://www.instagram.com/siaa_sketchncraft__/reel/Ddbf1XqBWKN/",
+        "asset": "/assets/drawing-study.jpg"
+      },
+      {
+        "name": "Marinette, in siaa’s style",
+        "category": "Drawings",
+        "source": "https://www.instagram.com/siaa_sketchncraft__/reel/DcqoBv0I3AJ/",
+        "asset": "/assets/drawing-art.jpg"
+      }
+    ],
+    "additionalViews": [
+      {
+        "product": "blue-bouquet",
+        "image": "/assets/rose-bouquet.jpg",
+        "source": "https://www.instagram.com/siaa_sketchncraft__/reel/Dafg5LnTZo2/",
+        "alt": "Another view of siaa’s blue and white pipe-cleaner bouquet"
+      },
+      {
+        "product": "blue-bouquet",
+        "image": "/assets/bouquet-detail.jpg",
+        "source": "https://www.instagram.com/siaa_sketchncraft__/reel/DanPUA5TRyE/",
+        "alt": "The blue bouquet beside handmade flower pots in the studio"
+      },
+      {
+        "product": "blue-flower-pot",
+        "image": "/assets/crochet.jpg",
+        "source": "https://www.instagram.com/siaa_sketchncraft__/reel/DdG4VY2hDZY/",
+        "alt": "A closer view of the blue pipe-cleaner flower pot"
+      },
+      {
+        "product": "chibi-drawing",
+        "image": "/assets/sketchbook.jpg",
+        "source": "https://www.instagram.com/siaa_sketchncraft__/reel/Dc8lHw-BV3I/",
+        "alt": "Another view of siaa’s chibi character sketchbook"
+      }
+    ],
+    "notes": "Additional views of the same blue bouquet and chibi sketch are grouped in galleries, not represented as separate merchandise. Photos were inspected visually; new product captions were reviewed. Prices remain unverified."
+  }
+}

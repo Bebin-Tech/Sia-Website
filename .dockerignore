@@ -1,0 +1,6 @@
+node_modules
+.env
+data
+public/uploads
+.git
+test-output
