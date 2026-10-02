@@ -51,19 +51,13 @@ Without those settings, requests still arrive in the secure dashboard and email 
 
 ## Deploy
 
-This checkout is running locally. It has **not** been published to a public host. The available Sites skill referenced setup/hosting files that were absent from the installed plugin, so no Sites deployment was attempted with an invented configuration.
+Deploy this repository to Vercel with Node.js 24 and the included configuration. The root Node server serves the React build and API. Connect the dedicated Turso Starter database to the project to supply TURSO_DATABASE_URL and TURSO_AUTH_TOKEN. Products, orders, sessions and uploaded images persist in Turso; original Instagram assets are bundled with deployments. Uploads are limited to 1 MB each.
 
-Use a Node.js 24 host or the supplied Dockerfile, with HTTPS at a trusted reverse proxy. Set `NODE_ENV=production`, `HOST=0.0.0.0`, and `PUBLIC_ORIGIN` to the exact HTTPS site origin. Production cookies require HTTPS. Expose only the proxy, not the raw Node port. Preserve `data/` and `public/uploads/` on persistent storage. Do not deploy to ephemeral/serverless local disk.
+For owner login, run npm run setup-admin locally, then copy the generated data/admin.json content into the sensitive Vercel environment variable ADMIN_CREDENTIALS. Never commit that file or use a default password. Redeploy after setting credentials. Credentials are salted scrypt hashes. When rotating credentials, also revoke sessions in the database.
 
-Example container workflow:
+Set NODE_ENV=production. PUBLIC_ORIGIN can be set to the exact production HTTPS origin; otherwise same-origin checks use the request host. Optional Resend settings enable owner email alerts. Notification delivery is awaited during checkout on Vercel; pending jobs are retried on subsequent order requests. For automatic scheduled retries, configure a separate scheduler. The persistent admin order queue remains available regardless of email configuration.
 
-```sh
-docker build -t siaa-store .
-docker run --rm -it -v siaa-data:/app/data siaa-store npm run setup-admin
-docker run -d --name siaa-store --env-file .env.production -p 127.0.0.1:3000:3000 -v siaa-data:/app/data -v siaa-uploads:/app/public/uploads siaa-store
-```
-
-Back up the SQLite database and uploads, restrict server filesystem access, and confirm the owner's policies and notification settings before accepting public customer requests. For deletion requests, the operator must remove the corresponding order data and notification record using a trusted database administration process; the dashboard does not currently offer deletion.
+For local or container hosting, omit Turso settings to use data/store.sqlite. Preserve the data directory. New uploaded image bytes are stored in the database. Back up the database and restrict access to credentials. The supplied Dockerfile remains supported.
 
 ## Checks
 
@@ -83,6 +77,6 @@ Back up the SQLite database and uploads, restrict server filesystem access, and 
 - `scripts/setup-admin.mjs`: local owner provisioning
 - `test/store.test.mjs`: isolated backend integration checks
 
-Remaining launch inputs: approved catalogue/prices, owner login setup, notification recipient and verified email sender, delivery/returns policies, and hosting/domain configuration.
+Remaining launch inputs: approved catalogue/prices, owner login setup, notification recipient and verified email sender, delivery/returns policies, and an optional custom domain.
 
 

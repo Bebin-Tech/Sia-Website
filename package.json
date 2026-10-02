@@ -13,10 +13,12 @@
     "build": "node scripts/build.mjs"
   },
   "dependencies": {
+    "@libsql/client": "^0.18.0",
     "react": "^19.3.0",
     "react-dom": "^19.3.0"
   },
   "devDependencies": {
-    "esbuild": "^0.28.2"
+    "esbuild": "^0.28.2",
+    "prettier": "^3.9.9"
   }
 }
