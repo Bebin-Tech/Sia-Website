@@ -1,6 +1,6 @@
 import React from 'react';
 
-const linkStyle={display:'inline-flex',alignItems:'center',justifyContent:'center',width:44,height:44,border:'1px solid var(--line)',borderRadius:'50%',color:'var(--pink)'};
+const linkStyle={display:'inline-flex',alignItems:'center',justifyContent:'center',width:44,height:44,border:'1px solid var(--line)',borderRadius:'50%',color:'var(--accent)'};
 
 export function FooterLinks(){return <div className="footer-icons">
  <a href="https://www.instagram.com/siaa_sketchncraft__/" target="_blank" rel="noopener" aria-label="Instagram" title="Instagram" style={linkStyle}><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg></a>

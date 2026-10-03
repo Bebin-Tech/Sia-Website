@@ -1,0 +1,88 @@
+/* Readable sky-blue and milky-white theme, shared by shop and studio. */
+:root {
+  --ink: #17384d;
+  --accent: #17577f;
+  --muted: #435e70;
+  --paper: #fffefa;
+  --tint: #dceffa;
+  --line: #b4ccd9;
+}
+body { line-height: 1.6; }
+header { background: #fffefa; border-bottom: 1px solid #b4ccd9; }
+nav { font-size: 15px; font-weight: 600; }
+.topline { background: #cde7f7; color: var(--ink); font-weight: 500; letter-spacing: .04em; }
+.hero { background: linear-gradient(115deg, #f3faff 0%, #d5eafa 100%); }
+.hero-copy > p { color: #35566c; font-size: 18px; }
+.eyebrow { font-size: 13px; letter-spacing: .12em; }
+.hero-foot, .hero-mini span, .wordmark small { color: var(--ink); }
+.hero-foot { font-size: 14px; }
+.ribbon { background: #cde7f7; color: var(--ink); font-weight: 500; border-block: 1px solid #b4ccd9; }
+.ribbon i { color: var(--accent); }
+button, .button { min-height: 44px; font-size: 15px; }
+.outline { border-color: #7c9bad; background: var(--paper); }
+button:disabled { opacity: .75; }
+:is(button,a,input,textarea,select):focus-visible {
+  outline: 3px solid #095a94;
+  outline-offset: 4px;
+}
+.category-story { border: 1px solid #b4ccd9; background: #e1f0fa; }
+.story-1 { background: #f1f8fc; }
+.story-2 { background: #e8f4fc; }
+.category-story .eyebrow { font-size: 12px; }
+.story-meta { font-size: 14px; color: #35566c; }
+.filters button { font-size: 14px; color: var(--ink); border-color: #7c9bad; background: var(--paper); }
+.filters .active { background: var(--accent); color: white; border-color: var(--accent); }
+.filters button > span { font-size: 12px; opacity: 1; }
+.collection-meta, .collection-meta select { font-size: 14px; }
+.collection-meta select { border: 1px solid #7c9bad; border-radius: 5px; padding: 9px; max-width: 190px; }
+.product-card { border: 1px solid #b4ccd9; border-radius: 9px; background: var(--paper); overflow: hidden; }
+.image-button { border-radius: 0; }
+.product-caption { padding: 0 15px 8px; }
+.product-caption h3 { font-size: 23px; font-weight: 500; }
+.product-card .price { font-size: 15px; font-weight: 600; }
+.product-card .view { font-size: 14px; padding: 13px 15px; border-top: 1px solid #b4ccd9; border-bottom: 0; background: #e4f2fb; color: #17384d; }
+.category-tag { font-size: 12px; font-weight: 600; background: #fffefa; color: #17384d; }
+.photo-count, .zoom-hint { font-size: 12px; background: #17384d; color: white; }
+.quick-view { background: #fffefa; font-size: 14px; }
+.collection-note, .photo-source { font-size: 14px; color: var(--muted); }
+.studio { background: linear-gradient(125deg, #dceefb, #f1f8fc); }
+.steps b, .steps p, .text-link { font-size: 14px; }
+.contact { background: linear-gradient(#fffefa, #e4f2fc); }
+footer p, footer small { font-size: 14px; }
+.footer-icons a { background: #e4f2fb; border-color: #7c9bad !important; color: var(--accent); }
+.footer-icons a:hover { background: #cde7f7; }
+.field { font-size: 15px; font-weight: 500; }
+.field input, .field textarea, .field select {
+  font-size: 16px;
+  background: #fffefa;
+  border: 1px solid #7895a6;
+  min-height: 46px;
+}
+input::placeholder, textarea::placeholder { color: #526c7c; opacity: 1; }
+.muted, .hint, .check-label { font-size: 14px; }
+.check-label input { width: 18px; height: 18px; flex-shrink: 0; }
+.detail-grid p { font-size: 16px; }
+.gallery-controls button, .close { width: 44px; height: 44px; }
+.gallery-position { background: #fffefa; font-weight: 600; }
+.panel, .order { border-color: #a4bfce; }
+.badge { font-size: 13px; font-weight: 600; }
+/* Keep content fully visible while retaining gentle movement. */
+.reveal.will-reveal { opacity: 1; }
+@keyframes soft-rise { from { transform: translateY(12px); } to { transform: translateY(0); } }
+@media (max-width: 620px) {
+  nav { font-size: 13px; gap: 18px; }
+  .topline { font-size: 12px; }
+  .hero-copy > p { font-size: 17px; }
+  .category-story .eyebrow { font-size: 12px; }
+  .story-meta { font-size: 13px; }
+  .filters button { font-size: 13px; padding: 10px 12px; }
+  .collection-meta { flex-wrap: wrap; font-size: 13px; }
+  .collection-meta select { font-size: 14px; max-width: 185px; }
+  .product-caption { padding: 0 10px 8px; }
+  .product-caption h3 { font-size: 21px; }
+  .product-card .price { font-size: 14px; }
+  .product-card .view { font-size: 13px; padding: 12px 10px; text-align: left; line-height: 1.5; }
+  .category-tag { font-size: 11px; }
+  .photo-count { font-size: 11px; }
+  .collection-note { font-size: 13px; }
+}
