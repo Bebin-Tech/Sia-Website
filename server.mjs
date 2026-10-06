@@ -1,3 +1,4 @@
+import {addBouquets} from './bouquets-update.mjs';
 import {addStudioBatch} from './studio-batch-update.mjs';
 import {orderPricing} from './pricing.mjs';
 import {addKeychains} from './keychains-update.mjs';
@@ -52,6 +53,7 @@ export async function createApp({
   await extendCatalogue(db);
   await addKeychains(db);
   await addStudioBatch(db);
+  await addBouquets(db);
   const withPair = async p => ({...p,pair_price:(await db.prepare("SELECT pair_price FROM keychain_prices WHERE product_id=?").get(p.id))?.pair_price ?? null});
   const withImages = async (p) => ({
     ...await withPair(p),
