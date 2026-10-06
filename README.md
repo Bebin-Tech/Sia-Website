@@ -45,6 +45,16 @@ The owner can enter approved prices and currency in the dashboard. Even priced i
 
 ## Email notifications
 
+## UPI payments
+
+The Payment button shows the owner's supplied QR for Delsia 0711 (`delsia0711@okicici`), a downloadable copy, and a UPI app link. The owner explicitly confirmed this recipient. Customers enter the studio-agreed INR total; this is not a server-issued quotation. Scanning the static QR requires entering the agreed amount in the payment app.
+
+After a new order, this browser saves the order reference and its private access key locally. Customers can submit a 12-digit UPI reference and reported amount for that order. Reports persist in the database and remain **Awaiting verification** until the signed-in owner checks the actual bank receipt and amount in the admin dashboard. Order status and payment verification are separate. Submitted references, app launches, and screenshots never automatically mark an order paid. Duplicate references are rejected. Customers without the saved browser access key should contact the studio to reconcile payment.
+
+This is direct UPI with manual reconciliation, not an automated payment gateway. No gateway credentials or webhooks are configured, and no real payment is performed in automated tests. App-link support depends on the device and UPI app; the original QR is the fallback.
+
+### Email alerts
+
 Copy `.env.example` to `.env`. Configure `OWNER_EMAIL`, `MAIL_FROM` (a verified sender), and `RESEND_API_KEY` to enable transactional new-order alerts via Resend's HTTPS API. Never put secrets into React source or Git.
 
 Without those settings, requests still arrive in the secure dashboard and email jobs remain pending. With settings present, the server retries pending delivery up to five times at intervals of at least one minute. Delivery state and failures appear with each order. Restart the server after changing environment settings. The application does not send customer confirmation emails or claim email delivery unless the provider accepts it.

@@ -139,6 +139,20 @@ input::placeholder, textarea::placeholder { color: #526c7c; opacity: 1; }
 .shop-header nav a { padding: 10px 18px; border-radius: 999px; font-size: 14px; transition: background .2s, color .2s; }
 .shop-header nav a::after { display: none; }
 .shop-header nav a:hover, .shop-header nav a:focus-visible { background: #d8eaf6; color: #124e73; }
+.shop-header nav .payment-nav { background: transparent; color: var(--ink); border-radius: 999px; padding: 10px 18px; font-size: 14px; box-shadow: none; }
+.shop-header nav .payment-nav:hover { background: #d8eaf6; transform: none; }
+.payment-layout { display: grid; grid-template-columns: minmax(0, .8fr) minmax(0, 1fr); gap: 30px; align-items: start; }
+.payment-qr { display: block; width: 100%; max-width: 350px; height: auto; border: 1px solid var(--line); border-radius: 14px; }
+.payment-reference, .payment-admin { background: #eaf5fc; padding: 18px; border: 1px solid var(--line); border-radius: 8px; }
+.upi-id { font-weight: 600; color: var(--accent); overflow-wrap: anywhere; }
+.payment-panel h2 { font-size: 36px; }
+.payment-panel .button { width: 100%; }
+@media (max-width: 760px) {
+  .payment-layout { grid-template-columns: 1fr; }
+  .payment-qr { max-width: 280px; margin: auto; }
+  .shop-header nav { flex-wrap: wrap; }
+  .shop-header nav .payment-nav { font-size: 13px; padding: 9px 12px; }
+}
 .shop-header .bag {
   justify-self: end;
   border-radius: 999px;
@@ -149,7 +163,7 @@ input::placeholder, textarea::placeholder { color: #526c7c; opacity: 1; }
   gap: 10px;
 }
 .shop-header .bag span { background: #fffefa; color: #17577f; min-width: 25px; padding: 2px 7px; }
-@media (max-width: 760px) {
+@media (max-width: 1000px) {
   .shop-header { grid-template-columns: 1fr auto; gap: 14px; padding: 13px 5%; }
   .shop-header .wordmark { font-size: 38px; }
   .shop-header nav { grid-row: 2; grid-column: 1 / -1; justify-content: center; width: 100%; padding: 4px; }

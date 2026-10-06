@@ -134,6 +134,20 @@ test("persistent order lifecycle, authentication, validation and product managem
     assert.equal(orders.data[0].items[0].quantity, 2);
     assert.equal(orders.data[0].items[0].unitPrice, null);
     const id = orders.data[0].id;
+    const payment={reference:order.data.reference,accessKey:body.idempotencyKey,amount:25000,transactionId:"123456789012"};
+    assert.equal((await call("/api/payments/report",{method:"POST",body:{...payment,accessKey:crypto.randomUUID()}})).status,403);
+    assert.equal((await call("/api/payments/report",{method:"POST",body:{...payment,amount:-1}})).status,400);
+    assert.equal((await call("/api/payments/report",{method:"POST",body:{...payment,transactionId:"invalid"}})).status,400);
+    const reported=await call("/api/payments/report",{method:"POST",body:payment});
+    assert.equal(reported.status,201);
+    assert.equal(reported.data.status,"Awaiting verification");
+    assert.equal((await call("/api/payments/report",{method:"POST",body:payment})).status,200);
+    assert.equal((await call("/api/payments/report",{method:"POST",body:{...payment,amount:50000}})).status,409);
+    assert.equal((await call("/api/admin/payments/"+id,{method:"PATCH",body:{status:"Verified received"}})).status,401);
+    assert.equal((await call("/api/admin/payments/"+id,{method:"PATCH",authenticated:true,body:{status:"Verified received"}})).status,200);
+    const paid=await call("/api/admin/orders",{authenticated:true});
+    assert.equal(paid.data[0].payment_status,"Verified received");
+    assert.equal(paid.data[0].payment_amount,25000);
     const badCsrf = await fetch(base + "/api/admin/orders/" + id, {
       method: "PATCH",
       headers: {

@@ -23,7 +23,8 @@ export async function createApp({
  CREATE TABLE IF NOT EXISTS notifications(order_id TEXT PRIMARY KEY REFERENCES orders(id),status TEXT NOT NULL DEFAULT 'pending',attempts INTEGER NOT NULL DEFAULT 0,last_attempt TEXT,error TEXT);
  CREATE TABLE IF NOT EXISTS sessions(hash TEXT PRIMARY KEY,expires INTEGER NOT NULL,csrf TEXT NOT NULL);
  CREATE TABLE IF NOT EXISTS uploads(path TEXT PRIMARY KEY,content_type TEXT NOT NULL,data TEXT NOT NULL);
- CREATE TABLE IF NOT EXISTS metadata(key TEXT PRIMARY KEY,value TEXT NOT NULL);`);
+ CREATE TABLE IF NOT EXISTS metadata(key TEXT PRIMARY KEY,value TEXT NOT NULL);
+ CREATE TABLE IF NOT EXISTS payment_reports(order_id TEXT PRIMARY KEY REFERENCES orders(id),transaction_id TEXT UNIQUE NOT NULL,amount INTEGER NOT NULL,status TEXT NOT NULL,updated TEXT NOT NULL);`);
   if (!(await db.prepare("SELECT 1 FROM metadata WHERE key='seeded'").get())) {
     const insert = db.prepare(
       "INSERT OR IGNORE INTO products VALUES(?,?,?,?,?,?,?,?,1,?)",
@@ -271,6 +272,30 @@ export async function createApp({
             ).map(withImages),
           ),
         );
+      if (path === "/api/payments/report" && method === "POST") {
+        if (!limit("payment:" + ip, 15)) fail("Too many requests. Please try again later.", 429);
+        const b = await body(req);
+        const reference = str(b.reference, "order reference", 40);
+        const accessKey = str(b.accessKey, "order access key", 100);
+        const order = await db.prepare("SELECT id,status FROM orders WHERE reference=? AND idempotency_key=?").get(reference,accessKey);
+        if (!order) fail("Order access could not be verified. Use the browser where you placed the request.",403);
+        if (order.status === "Cancelled") fail("This request has been cancelled. Please contact the studio.",409);
+        const transactionId = str(b.transactionId,"12-digit UPI reference",12);
+        if (!/^\d{12}$/.test(transactionId)) fail("Enter the 12-digit UPI reference from your payment app.");
+        if (!Number.isSafeInteger(b.amount) || b.amount < 100 || b.amount > 100000000) fail("Enter a valid amount in INR.");
+        const prior = await db.prepare("SELECT * FROM payment_reports WHERE order_id=?").get(order.id);
+        if (prior) {
+          if (prior.transaction_id === transactionId && prior.amount === b.amount) return json(res,200,{status:prior.status});
+          fail("Payment details have already been submitted. Contact the studio to correct them.",409);
+        }
+        try {
+          await db.prepare("INSERT INTO payment_reports VALUES(?,?,?,?,?)").run(order.id,transactionId,b.amount,"Awaiting verification",new Date().toISOString());
+        } catch (e) {
+          if (String(e.message).includes("UNIQUE")) fail("This payment reference has already been submitted.",409);
+          throw e;
+        }
+        return json(res,201,{status:"Awaiting verification"});
+      }
       if (path === "/api/orders" && method === "POST") {
         if (!limit("order:" + ip, 15))
           fail("Too many requests. Please try again in 15 minutes.", 429);
@@ -517,7 +542,7 @@ export async function createApp({
             (
               await db
                 .prepare(
-                  "SELECT o.*,n.status AS notification_status,n.error AS notification_error FROM orders o LEFT JOIN notifications n ON o.id=n.order_id ORDER BY created DESC LIMIT 500",
+                  "SELECT o.*,n.status AS notification_status,n.error AS notification_error,p.transaction_id AS payment_reference,p.amount AS payment_amount,p.status AS payment_status FROM orders o LEFT JOIN notifications n ON o.id=n.order_id LEFT JOIN payment_reports p ON o.id=p.order_id ORDER BY created DESC LIMIT 500",
                 )
                 .all()
             ).map((o) => ({
@@ -528,6 +553,13 @@ export async function createApp({
               idempotency_key: undefined,
             })),
           );
+        if (path.startsWith("/api/admin/payments/") && method === "PATCH") {
+          const b=await body(req);
+          if (!["Verified received","Not found","Awaiting verification"].includes(b.status)) fail("Invalid payment status.");
+          const result=await db.prepare("UPDATE payment_reports SET status=?,updated=? WHERE order_id=?").run(b.status,new Date().toISOString(),path.split("/").pop());
+          if(!result.changes) fail("Payment report not found.",404);
+          return json(res,200,{ok:true});
+        }
         if (path.startsWith("/api/admin/orders/") && method === "PATCH") {
           const b = await body(req);
           if (
