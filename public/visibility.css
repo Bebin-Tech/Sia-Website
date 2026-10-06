@@ -8,7 +8,26 @@
   --line: #b4ccd9;
 }
 body { line-height: 1.6; }
-header { background: #fffefa; border-bottom: 1px solid #b4ccd9; }
+header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  isolation: isolate;
+  background: #fffefa;
+  opacity: 1;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  border-bottom: 1px solid #b4ccd9;
+  box-shadow: 0 4px 16px #17384d12;
+}
+header::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: #fffefa;
+  pointer-events: none;
+}
 nav { font-size: 15px; font-weight: 600; }
 .topline { background: #cde7f7; color: var(--ink); font-weight: 500; letter-spacing: .04em; }
 .hero { background: linear-gradient(115deg, #f3faff 0%, #d5eafa 100%); }
