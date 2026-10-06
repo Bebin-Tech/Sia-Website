@@ -207,3 +207,9 @@ button.danger:hover { background: #82202a; color: white; }
 .detail-price { display: block; padding: 16px; border: 1px solid #a9cadd; border-radius: 10px; background: #e0f0fb; color: #123f5c; font-size: 26px; line-height: 1.4; }
 .summary-total strong { font-size: 24px; color: #123f5c; }
 @media(max-width:620px) { .price-option { padding: 10px; } .price-value { font-size: 23px; } .price-value.quote-price { font-size: 16px; } }
+/* Approved flower logo, using the original transparent artwork. */
+.brand-logo { display: block; flex-shrink: 0; width: 190px; line-height: 0; }
+.brand-logo img { display: block; width: 100%; height: auto; }
+.shop-header .brand-logo { width: 190px; }
+footer .brand-logo { width: 210px; }
+@media(max-width:620px) { .brand-logo, .shop-header .brand-logo { width: 150px; } footer .brand-logo { width: 190px; } }
