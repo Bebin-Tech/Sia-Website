@@ -506,6 +506,16 @@ export async function createApp({
             .run(id, ...values);
           return json(res, 201, { id });
         }
+        if (path.startsWith("/api/admin/products/") && method === "DELETE") {
+          const id = path.split("/").pop();
+          if (!(await db.prepare("SELECT id FROM products WHERE id=?").get(id))) fail("Product not found.",404);
+          // Order items hold their own price/name snapshots; retain shared image files.
+          await db.batch([
+            {sql:"DELETE FROM product_images WHERE product_id=?",args:[id]},
+            {sql:"DELETE FROM products WHERE id=?",args:[id]},
+          ]);
+          return json(res,200,{ok:true});
+        }
         if (path.startsWith("/api/admin/products/") && method === "PUT") {
           const id = path.split("/").pop();
           const values = await productInput(await body(req));

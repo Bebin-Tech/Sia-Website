@@ -230,6 +230,15 @@ test("persistent order lifecycle, authentication, validation and product managem
       ).status,
       409,
     );
+    const deletePath='/api/admin/products/'+p.id;
+    assert.equal((await call(deletePath,{method:'DELETE'})).status,401);
+    const deniedDelete=await fetch(base+deletePath,{method:'DELETE',headers:{Cookie:cookie,Origin:base}});
+    assert.equal(deniedDelete.status,403);
+    assert.equal((await call(deletePath,{method:'DELETE',authenticated:true})).status,200);
+    assert.equal((await call(deletePath,{method:'DELETE',authenticated:true})).status,404);
+    assert.equal((await app.db.prepare('SELECT COUNT(*) AS n FROM product_images WHERE product_id=?').get(p.id)).n,0);
+    assert.equal((await call('/api/admin/products',{authenticated:true})).data.some(x=>x.id===p.id),false);
+    assert.equal((await call('/api/admin/orders',{authenticated:true})).data[0].items[0].name,p.name);
     const pixel = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+a5XcAAAAASUVORK5CYII=";
     const upload = await call("/api/admin/upload", {method:"POST",authenticated:true,body:{data:"data:image/png;base64,"+pixel}});
     assert.equal(upload.status,201);
@@ -242,6 +251,7 @@ test("persistent order lifecycle, authentication, validation and product managem
     const image = await fetch(base+upload.data.image);
     assert.equal(image.status,200);
     assert.equal(Buffer.from(await image.arrayBuffer()).toString("base64"),pixel);
+    assert.equal((await call('/api/admin/products',{authenticated:true})).data.some(x=>x.id===p.id),false);
     const persisted = await call("/api/admin/orders", { authenticated: true });
     assert.equal(persisted.data[0].status, "Confirmed");
     assert.equal(persisted.data[0].reference, order.data.reference);
