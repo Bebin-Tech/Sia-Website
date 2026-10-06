@@ -105,3 +105,56 @@ input::placeholder, textarea::placeholder { color: #526c7c; opacity: 1; }
   .photo-count { font-size: 11px; }
   .collection-note { font-size: 13px; }
 }
+
+/* Compact studio masthead. */
+.studio-announcement {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 18px;
+  padding: 7px 20px;
+  background: #dceefa;
+  color: #284e66;
+  font-size: 12px;
+  letter-spacing: .08em;
+}
+.studio-announcement > span { font-size: 17px; color: #17577f; }
+.shop-header {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 28px;
+  padding: 16px 6%;
+  border-bottom: 1px solid #cfdfE8;
+  box-shadow: 0 5px 20px #17384d09;
+}
+.shop-header .wordmark { justify-self: start; font-size: 43px; }
+.shop-header .wordmark small { font-size: 9px; letter-spacing: .2em; margin-top: 7px; }
+.shop-header nav {
+  gap: 4px;
+  padding: 5px;
+  background: #edf5fa;
+  border: 1px solid #d5e4ed;
+  border-radius: 999px;
+}
+.shop-header nav a { padding: 10px 18px; border-radius: 999px; font-size: 14px; transition: background .2s, color .2s; }
+.shop-header nav a::after { display: none; }
+.shop-header nav a:hover, .shop-header nav a:focus-visible { background: #d8eaf6; color: #124e73; }
+.shop-header .bag {
+  justify-self: end;
+  border-radius: 999px;
+  padding: 11px 17px;
+  background: #17577f;
+  color: #fffefa;
+  border: 1px solid #17577f;
+  gap: 10px;
+}
+.shop-header .bag span { background: #fffefa; color: #17577f; min-width: 25px; padding: 2px 7px; }
+@media (max-width: 760px) {
+  .shop-header { grid-template-columns: 1fr auto; gap: 14px; padding: 13px 5%; }
+  .shop-header .wordmark { font-size: 38px; }
+  .shop-header nav { grid-row: 2; grid-column: 1 / -1; justify-content: center; width: 100%; padding: 4px; }
+  .shop-header nav a { padding: 9px 12px; font-size: 13px; }
+  .shop-header .bag { grid-row: 1; grid-column: 2; padding: 10px 13px; font-size: 13px; }
+  .studio-announcement { gap: 12px; font-size: 11px; padding: 5px 10px; letter-spacing: .04em; }
+  html { scroll-padding-top: 160px; }
+}
