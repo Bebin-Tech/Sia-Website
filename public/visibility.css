@@ -193,3 +193,8 @@ button.danger:hover { background: #82202a; color: white; }
 @media(max-width:1400px) { .category-stories { grid-template-columns: repeat(3,minmax(0,1fr)); } }
 @media(max-width:1100px) { .category-stories { grid-template-columns: repeat(2,minmax(0,1fr)); } }
 @media(max-width:620px) { .category-stories { grid-template-columns: 1fr; } }
+.editor-gallery { display: grid; grid-template-columns: repeat(auto-fit,minmax(150px,1fr)); gap: 16px; margin: 20px 0; }
+.editor-photo { padding: 12px; border: 1px solid var(--line); border-radius: 8px; }
+.editor-photo img { width: 100%; height: 150px; object-fit: contain; background: #edf5fa; }
+.editor-photo button { width: 100%; margin-top: 8px; }
+.gallery-thumbnails { flex-wrap: wrap; }

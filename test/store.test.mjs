@@ -246,12 +246,24 @@ test("persistent order lifecycle, authentication, validation and product managem
     const pixel = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+a5XcAAAAASUVORK5CYII=";
     const upload = await call("/api/admin/upload", {method:"POST",authenticated:true,body:{data:"data:image/png;base64,"+pixel}});
     assert.equal(upload.status,201);
+    const galleryProduct=(await call('/api/admin/products',{authenticated:true})).data.find(x=>x.id==='cherry-keychain');
+    const photos=[{image:upload.data.image,source:'',alt:'New cover'},{image:galleryProduct.image,source:'',alt:'Original photo'}];
+    const galleryBody={...galleryProduct,image:photos[0].image,images:photos};
+    assert.equal((await call('/api/admin/products/'+galleryProduct.id,{method:'PUT',authenticated:true,body:galleryBody})).status,200);
+    let savedGallery=(await call('/api/products')).data.find(x=>x.id===galleryProduct.id);
+    assert.deepEqual(savedGallery.images.map(x=>x.image),photos.map(x=>x.image));
+    assert.equal((await call('/api/admin/products/'+galleryProduct.id,{method:'PUT',authenticated:true,body:{...galleryBody,images:[...photos,photos[0]]}})).status,400);
+    assert.equal((await call('/api/admin/products/'+galleryProduct.id,{method:'PUT',authenticated:true,body:{...galleryBody,images:[photos[0],{image:'/uploads/missing.png'}]}})).status,400);
+    assert.equal((await call('/api/admin/products/'+galleryProduct.id,{method:'PUT',authenticated:true,body:{...galleryBody,images:[]}})).status,400);
+    assert.equal((await call('/api/admin/products/'+galleryProduct.id,{method:'PUT',authenticated:true,body:{...galleryBody,images:[photos[0]]}})).status,200);
+
     await app.db.prepare("INSERT INTO metadata VALUES(?,?)").run("owner-credentials",readFileSync(resolve(dir,"admin.json"),"utf8"));
     unlinkSync(resolve(dir,"admin.json"));
     await new Promise((r) => app.server.close(r));
     app = await createApp({ dataDir: dir, notifications: false });
     await new Promise((r) => app.server.listen(0, "127.0.0.1", r));
     base = "http://127.0.0.1:" + app.server.address().port;
+    assert.equal((await call('/api/products')).data.find(x=>x.id==='cherry-keychain').images.length,1);
     const image = await fetch(base+upload.data.image);
     assert.equal(image.status,200);
     assert.equal(Buffer.from(await image.arrayBuffer()).toString("base64"),pixel);

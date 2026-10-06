@@ -193,6 +193,23 @@ export async function createApp({
       new Date().toISOString(),
     ];
   }
+  async function galleryInput(b) {
+    if (b.images === undefined) return null;
+    if (!Array.isArray(b.images) || b.images.length < 1 || b.images.length > 12) fail("Choose between 1 and 12 photos.");
+    const seen=new Set();
+    for (const photo of b.images) {
+      if (!photo || typeof photo.image !== 'string' || !/^\/(assets|uploads)\/[a-zA-Z0-9_-]+\.(jpg|jpeg|png|webp)$/.test(photo.image) || (!existsSync(resolve(publicDir,'.'+photo.image)) && !(await db.prepare('SELECT 1 FROM uploads WHERE path=?').get(photo.image)))) fail("Choose valid uploaded photos.");
+      if(seen.has(photo.image)) fail("Remove duplicate photos."); seen.add(photo.image);
+      str(photo.alt??'',"photo description",300,false);
+      if(photo.source && !/^https:\/\/www\.instagram\.com\//.test(photo.source)) fail("Invalid photo source.");
+    }
+    if(b.images[0].image!==b.image) fail("The first photo must be the cover photo.");
+    return b.images;
+  }
+  const galleryStatements=(id,photos)=>photos===null?[]:[
+    {sql:'DELETE FROM product_images WHERE product_id=?',args:[id]},
+    ...photos.map(p=>({sql:'INSERT INTO product_images VALUES(?,?,?,?)',args:[id,p.image,p.source||'',p.alt||'']}))
+  ];
   async function notifyOwner() {
     if (
       !process.env.RESEND_API_KEY ||
@@ -511,14 +528,16 @@ export async function createApp({
           return json(
             res,
             200,
-            await Promise.all((await db.prepare("SELECT * FROM products ORDER BY rowid DESC").all()).map(withPair)),
+            await Promise.all((await db.prepare("SELECT * FROM products ORDER BY rowid DESC").all()).map(withImages)),
           );
         if (path === "/api/admin/products" && method === "POST") {
           const b = await body(req), values = await productInput(b),
             id = randomUUID();
+          const photos=await galleryInput(b);
           await db.batch([
             {sql:"INSERT INTO products VALUES(?,?,?,?,?,?,?,?,?,?)",args:[id,...values]},
-            {sql:"INSERT INTO keychain_prices VALUES(?,?)",args:[id,b.category==='Keychains'?b.pair_price??null:null]}
+            {sql:"INSERT INTO keychain_prices VALUES(?,?)",args:[id,b.category==='Keychains'?b.pair_price??null:null]},
+            ...galleryStatements(id,photos)
           ]);
           return json(res, 201, { id });
         }
@@ -535,11 +554,12 @@ export async function createApp({
         }
         if (path.startsWith("/api/admin/products/") && method === "PUT") {
           const id = path.split("/").pop();
-          const b=await body(req), values=await productInput(b);
+          const b=await body(req), values=await productInput(b), photos=await galleryInput(b);
           if (!(await db.prepare("SELECT id FROM products WHERE id=?").get(id))) fail("Product not found.",404);
           await db.batch([
             {sql:"UPDATE products SET name=?,category=?,description=?,image=?,source=?,price=?,currency=?,active=?,updated=? WHERE id=?",args:[...values,id]},
-            {sql:"INSERT INTO keychain_prices VALUES(?,?) ON CONFLICT(product_id) DO UPDATE SET pair_price=excluded.pair_price",args:[id,b.category==='Keychains'?b.pair_price??null:null]}
+            {sql:"INSERT INTO keychain_prices VALUES(?,?) ON CONFLICT(product_id) DO UPDATE SET pair_price=excluded.pair_price",args:[id,b.category==='Keychains'?b.pair_price??null:null]},
+            ...galleryStatements(id,photos)
           ]);
           return json(res, 200, { ok: true });
         }
