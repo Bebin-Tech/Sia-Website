@@ -28,6 +28,17 @@ test('saved prices, quantities, retries, quotes and tampered payment totals',asy
   const mixed=await post('/api/orders',{...body,idempotencyKey:crypto.randomUUID(),items:[{id:'cherry-keychain',quantity:1},{id:'blue-bouquet',quantity:1}]});
   assert.equal(mixed.data.pricing.total,null);assert.equal(mixed.data.pricing.quoteRequired,true);
   assert.equal(mixed.data.pricing.subtotal,9000);
+  await app.db.prepare('INSERT INTO keychain_prices VALUES(?,?)').run('cherry-keychain',8000);
+  const pairBody={...body,idempotencyKey:crypto.randomUUID(),items:[{id:'cherry-keychain',quantity:2,variant:'pair'},{id:'cherry-keychain',quantity:1,variant:'single'}]};
+  const pairs=await post('/api/orders',pairBody);
+  assert.equal(pairs.status,201);assert.equal(pairs.data.pricing.total,25000);
+  assert.equal(pairs.data.items[0].unitPrice,8000);assert.equal(pairs.data.items[0].piecesPerUnit,2);
+  await app.db.prepare('UPDATE keychain_prices SET pair_price=10000 WHERE product_id=?').run('cherry-keychain');
+  assert.equal((await post('/api/orders',pairBody)).data.pricing.total,25000);
+  const unpriced=await post('/api/orders',{...body,idempotencyKey:crypto.randomUUID(),items:[{id:'shield-keychain',quantity:1,variant:'pair'}]});
+  assert.equal(unpriced.data.pricing.total,null);assert.equal(unpriced.data.items[0].unitPrice,null);
+  assert.equal((await post('/api/orders',{...body,idempotencyKey:crypto.randomUUID(),items:[{id:'blue-bouquet',quantity:1,variant:'pair'}]})).status,400);
+  assert.equal((await post('/api/orders',{...body,idempotencyKey:crypto.randomUUID(),items:[{id:'cherry-keychain',quantity:1,variant:'fake'}]})).status,400);
   await app.db.prepare("UPDATE orders SET status='Cancelled' WHERE reference=?").run(order.data.reference);
   assert.equal((await post('/api/orders/payment-details',access)).status,409);
  } finally {await new Promise(r=>app.server.close(r));}

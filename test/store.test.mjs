@@ -230,6 +230,10 @@ test("persistent order lifecycle, authentication, validation and product managem
       ).status,
       409,
     );
+    const keychain=catalogue.data.find(p=>p.id==='cherry-keychain');
+    assert.equal((await call('/api/admin/products/'+keychain.id,{method:'PUT',authenticated:true,body:{...keychain,pair_price:8000}})).status,200);
+    assert.equal((await call('/api/products')).data.find(p=>p.id===keychain.id).pair_price,8000);
+    assert.equal((await call('/api/admin/products/'+keychain.id,{method:'PUT',authenticated:true,body:{...keychain,pair_price:-1}})).status,400);
     const deletePath='/api/admin/products/'+p.id;
     assert.equal((await call(deletePath,{method:'DELETE'})).status,401);
     const deniedDelete=await fetch(base+deletePath,{method:'DELETE',headers:{Cookie:cookie,Origin:base}});

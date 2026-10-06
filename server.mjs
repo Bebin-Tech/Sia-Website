@@ -27,6 +27,7 @@ export async function createApp({
  CREATE TABLE IF NOT EXISTS sessions(hash TEXT PRIMARY KEY,expires INTEGER NOT NULL,csrf TEXT NOT NULL);
  CREATE TABLE IF NOT EXISTS uploads(path TEXT PRIMARY KEY,content_type TEXT NOT NULL,data TEXT NOT NULL);
  CREATE TABLE IF NOT EXISTS metadata(key TEXT PRIMARY KEY,value TEXT NOT NULL);
+ CREATE TABLE IF NOT EXISTS keychain_prices(product_id TEXT PRIMARY KEY REFERENCES products(id),pair_price INTEGER);
  CREATE TABLE IF NOT EXISTS payment_reports(order_id TEXT PRIMARY KEY REFERENCES orders(id),transaction_id TEXT UNIQUE NOT NULL,amount INTEGER NOT NULL,status TEXT NOT NULL,updated TEXT NOT NULL);`);
   if (!(await db.prepare("SELECT 1 FROM metadata WHERE key='seeded'").get())) {
     const insert = db.prepare(
@@ -51,8 +52,9 @@ export async function createApp({
   await extendCatalogue(db);
   await addKeychains(db);
   await addStudioBatch(db);
+  const withPair = async p => ({...p,pair_price:(await db.prepare("SELECT pair_price FROM keychain_prices WHERE product_id=?").get(p.id))?.pair_price ?? null});
   const withImages = async (p) => ({
-    ...p,
+    ...await withPair(p),
     images: [
       { image: p.image, source: p.source, alt: p.name + " by siaa" },
       ...(await db
@@ -161,8 +163,10 @@ export async function createApp({
       (!Number.isSafeInteger(price) || price < 1 || price > 100000000)
     )
       fail("Price must be a positive amount.");
+    const pairPrice = b.category === 'Keychains' ? b.pair_price ?? null : null;
+    if (pairPrice !== null && (!Number.isSafeInteger(pairPrice) || pairPrice < 1 || pairPrice > 100000000)) fail("Pair price must be a positive amount.");
     let currency = null;
-    if (price !== null) {
+    if (price !== null || pairPrice !== null) {
       currency = str(b.currency, "three-letter currency code", 3).toUpperCase();
       try {
         new Intl.NumberFormat("en", { style: "currency", currency });
@@ -376,12 +380,17 @@ export async function createApp({
               x.quantity > 20
             )
               fail("Quantity must be between 1 and 20.");
+            const variant=x.variant ?? 'single';
+            if (!['single','pair'].includes(variant) || (variant==='pair' && p.category!=='Keychains')) fail("Choose a valid product option.");
+            const optionPrice=variant==='pair'?(await withPair(p)).pair_price:p.price;
             return {
+              variant: p.category==='Keychains'?variant:'single',
+              piecesPerUnit: variant==='pair'?2:1,
               productId: p.id,
               name: p.name,
               quantity: x.quantity,
               notes: str(x.notes ?? "", "personalisation", 2000, false),
-              unitPrice: p.price,
+              unitPrice: optionPrice,
               currency: p.currency,
             };
           }),
@@ -496,16 +505,15 @@ export async function createApp({
           return json(
             res,
             200,
-            await db
-              .prepare("SELECT * FROM products ORDER BY rowid DESC")
-              .all(),
+            await Promise.all((await db.prepare("SELECT * FROM products ORDER BY rowid DESC").all()).map(withPair)),
           );
         if (path === "/api/admin/products" && method === "POST") {
-          const values = await productInput(await body(req)),
+          const b = await body(req), values = await productInput(b),
             id = randomUUID();
-          await db
-            .prepare("INSERT INTO products VALUES(?,?,?,?,?,?,?,?,?,?)")
-            .run(id, ...values);
+          await db.batch([
+            {sql:"INSERT INTO products VALUES(?,?,?,?,?,?,?,?,?,?)",args:[id,...values]},
+            {sql:"INSERT INTO keychain_prices VALUES(?,?)",args:[id,b.category==='Keychains'?b.pair_price??null:null]}
+          ]);
           return json(res, 201, { id });
         }
         if (path.startsWith("/api/admin/products/") && method === "DELETE") {
@@ -513,6 +521,7 @@ export async function createApp({
           if (!(await db.prepare("SELECT id FROM products WHERE id=?").get(id))) fail("Product not found.",404);
           // Order items hold their own price/name snapshots; retain shared image files.
           await db.batch([
+            {sql:"DELETE FROM keychain_prices WHERE product_id=?",args:[id]},
             {sql:"DELETE FROM product_images WHERE product_id=?",args:[id]},
             {sql:"DELETE FROM products WHERE id=?",args:[id]},
           ]);
@@ -520,13 +529,12 @@ export async function createApp({
         }
         if (path.startsWith("/api/admin/products/") && method === "PUT") {
           const id = path.split("/").pop();
-          const values = await productInput(await body(req));
-          const r = await db
-            .prepare(
-              "UPDATE products SET name=?,category=?,description=?,image=?,source=?,price=?,currency=?,active=?,updated=? WHERE id=?",
-            )
-            .run(...values, id);
-          if (!r.changes) fail("Product not found.", 404);
+          const b=await body(req), values=await productInput(b);
+          if (!(await db.prepare("SELECT id FROM products WHERE id=?").get(id))) fail("Product not found.",404);
+          await db.batch([
+            {sql:"UPDATE products SET name=?,category=?,description=?,image=?,source=?,price=?,currency=?,active=?,updated=? WHERE id=?",args:[...values,id]},
+            {sql:"INSERT INTO keychain_prices VALUES(?,?) ON CONFLICT(product_id) DO UPDATE SET pair_price=excluded.pair_price",args:[id,b.category==='Keychains'?b.pair_price??null:null]}
+          ]);
           return json(res, 200, { ok: true });
         }
         if (path === "/api/admin/upload" && method === "POST") {
