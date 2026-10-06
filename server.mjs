@@ -1,3 +1,4 @@
+import {addStudioBatch} from './studio-batch-update.mjs';
 import {orderPricing} from './pricing.mjs';
 import {addKeychains} from './keychains-update.mjs';
 import http from "node:http";
@@ -49,6 +50,7 @@ export async function createApp({
   }
   await extendCatalogue(db);
   await addKeychains(db);
+  await addStudioBatch(db);
   const withImages = async (p) => ({
     ...p,
     images: [
@@ -138,7 +140,7 @@ export async function createApp({
   async function productInput(b) {
     const name = str(b.name, "product name", 150),
       category = str(b.category, "category", 30);
-    if (!["Bouquets", "Drawings", "Crafts", "Keychains"].includes(category))
+    if (!["Bouquets", "Drawings", "Crafts", "Keychains", "Flower Pots"].includes(category))
       fail("Choose a supported category.");
     const description = str(b.description, "description", 3000);
     const image = str(b.image, "image", 300);
