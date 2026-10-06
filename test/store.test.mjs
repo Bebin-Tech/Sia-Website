@@ -41,12 +41,12 @@ test("persistent order lifecycle, authentication, validation and product managem
   try {
     const catalogue = await call("/api/products");
     assert.equal(catalogue.status, 200);
-    assert.equal(catalogue.data.length, 9);
+    assert.equal(catalogue.data.length, 11);
     assert.equal(catalogue.data[0].price, null);
     assert.equal(catalogue.data[0].images.length, 3);
     assert.equal(
       catalogue.data.reduce((n, p) => n + p.images.length, 0),
-      13,
+      15,
     );
     assert.equal((await call("/api/admin/orders")).status, 401);
     assert.equal(
@@ -220,7 +220,7 @@ test("persistent order lifecycle, authentication, validation and product managem
       ).status,
       200,
     );
-    assert.equal((await call("/api/products")).data.length, 8);
+    assert.equal((await call("/api/products")).data.length, 10);
     assert.equal(
       (
         await call("/api/orders", {
@@ -254,7 +254,7 @@ test("persistent order lifecycle, authentication, validation and product managem
       (await call("/api/admin/orders", { authenticated: true })).status,
       401,
     );
-    assert.equal((await call("/api/products")).data.length, 8);
+    assert.equal((await call("/api/products")).data.length, 10);
     assert.equal((await call("/api/admin/login",{method:"POST",body:{email:"test@example.invalid",password}})).status,200);
   } finally {
     await new Promise((r) => app.server.close(r));

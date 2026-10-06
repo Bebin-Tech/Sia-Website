@@ -90,3 +90,8 @@ For local or container hosting, omit Turso settings to use data/store.sqlite. Pr
 Remaining launch inputs: approved catalogue/prices, owner login setup, notification recipient and verified email sender, delivery/returns policies, and an optional custom domain.
 
 
+
+## Owner-supplied keychains and order totals
+The 6 October 2026 owner update adds Cherry bow keychain (INR 50) and Star shield keychain (INR 70), using the supplied original photographs. A one-time additive migration preserves subsequent owner edits and categorises the existing duck keychain under Keychains. Other prices remain unconfirmed.
+
+Checkout shows quantity-based line totals. The server snapshots authoritative prices on order creation; retries and payment retrieval use those saved values. Mixed/unpriced/non-INR orders require a studio quote. INR product totals automatically fill payment, with a separately entered studio-confirmed delivery charge (no delivery tariff has been provided). Payment reports validate the product total plus delivery; bank receipt verification remains manual. The supplied static QR does not encode an amount; the UPI app link does.

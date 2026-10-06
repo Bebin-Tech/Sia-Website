@@ -1,3 +1,5 @@
+import {orderPricing} from './pricing.mjs';
+import {addKeychains} from './keychains-update.mjs';
 import http from "node:http";
 import { openDatabase } from "./database.mjs";
 import { readFileSync, existsSync } from "node:fs";
@@ -46,6 +48,7 @@ export async function createApp({
       .run("seeded", "1");
   }
   await extendCatalogue(db);
+  await addKeychains(db);
   const withImages = async (p) => ({
     ...p,
     images: [
@@ -135,7 +138,7 @@ export async function createApp({
   async function productInput(b) {
     const name = str(b.name, "product name", 150),
       category = str(b.category, "category", 30);
-    if (!["Bouquets", "Drawings", "Crafts"].includes(category))
+    if (!["Bouquets", "Drawings", "Crafts", "Keychains"].includes(category))
       fail("Choose a supported category.");
     const description = str(b.description, "description", 3000);
     const image = str(b.image, "image", 300);
@@ -272,17 +275,28 @@ export async function createApp({
             ).map(withImages),
           ),
         );
+      if (path === "/api/orders/payment-details" && method === "POST") {
+        if (!limit("details:" + ip, 30)) fail("Too many requests. Try again later.",429);
+        const b = await body(req);
+        const order = await db.prepare("SELECT reference,items,status FROM orders WHERE reference=? AND idempotency_key=?").get(str(b.reference,"reference",40),str(b.accessKey,"access key",100));
+        if (!order) fail("Order access could not be verified.",403);
+        if (order.status === "Cancelled") fail("This order has been cancelled.",409);
+        const items=JSON.parse(order.items);
+        return json(res,200,{reference:order.reference,items,pricing:orderPricing(items)});
+      }
       if (path === "/api/payments/report" && method === "POST") {
         if (!limit("payment:" + ip, 15)) fail("Too many requests. Please try again later.", 429);
         const b = await body(req);
         const reference = str(b.reference, "order reference", 40);
         const accessKey = str(b.accessKey, "order access key", 100);
-        const order = await db.prepare("SELECT id,status FROM orders WHERE reference=? AND idempotency_key=?").get(reference,accessKey);
+        const order = await db.prepare("SELECT id,status,items FROM orders WHERE reference=? AND idempotency_key=?").get(reference,accessKey);
         if (!order) fail("Order access could not be verified. Use the browser where you placed the request.",403);
         if (order.status === "Cancelled") fail("This request has been cancelled. Please contact the studio.",409);
         const transactionId = str(b.transactionId,"12-digit UPI reference",12);
         if (!/^\d{12}$/.test(transactionId)) fail("Enter the 12-digit UPI reference from your payment app.");
         if (!Number.isSafeInteger(b.amount) || b.amount < 100 || b.amount > 100000000) fail("Enter a valid amount in INR.");
+        const pricing = orderPricing(JSON.parse(order.items));
+        if (!pricing.quoteRequired && ( !Number.isSafeInteger(b.deliveryAmount) || b.deliveryAmount < 0 || b.amount !== pricing.total + b.deliveryAmount)) fail("Payment amount must match the saved product total plus the agreed delivery charge.");
         const prior = await db.prepare("SELECT * FROM payment_reports WHERE order_id=?").get(order.id);
         if (prior) {
           if (prior.transaction_id === transactionId && prior.amount === b.amount) return json(res,200,{status:prior.status});
@@ -335,13 +349,13 @@ export async function createApp({
         const payloadHash = hash(JSON.stringify({ customer, items: b.items }));
         const prior = await db
           .prepare(
-            "SELECT reference,payload_hash FROM orders WHERE idempotency_key=?",
+            "SELECT reference,payload_hash,items FROM orders WHERE idempotency_key=?",
           )
           .get(key);
         if (prior) {
           if (prior.payload_hash !== payloadHash)
             fail("This request key was already used. Reopen checkout.", 409);
-          return json(res, 200, { reference: prior.reference });
+          return json(res, 200, { reference: prior.reference, items: JSON.parse(prior.items), pricing: orderPricing(JSON.parse(prior.items)) });
         }
         const items = await Promise.all(
           b.items.map(async (x) => {
@@ -401,10 +415,10 @@ export async function createApp({
           if (!existing) throw e;
           if (existing.payload_hash !== payloadHash)
             fail("This request key was already used. Reopen checkout.", 409);
-          return json(res, 200, { reference: existing.reference });
+          return json(res, 200, { reference: existing.reference, items: JSON.parse(existing.items), pricing: orderPricing(JSON.parse(existing.items)) });
         }
         await dispatch();
-        json(res, 201, { reference });
+        json(res, 201, { reference, items, pricing: orderPricing(items) });
         return;
       }
       if (path === "/api/admin/login" && method === "POST") {
