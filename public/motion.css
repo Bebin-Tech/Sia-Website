@@ -1,0 +1,41 @@
+/* Finite, gentle motion: content stays readable throughout. */
+@media (prefers-reduced-motion: no-preference) {
+  .hero { position: relative; overflow: hidden; }
+  .hero::before { content: ''; position: absolute; width: 440px; height: 440px; border: 1px solid #8ebbd044; border-radius: 50%; right: -170px; top: 40px; pointer-events: none; animation: studio-orbit 4s ease-out both; }
+  .hero-copy > * { animation: studio-arrive .8s cubic-bezier(.2,.75,.2,1) both; }
+  .hero-copy h1 { animation-delay: .08s; }
+  .hero-copy > p { animation-delay: .16s; }
+  .hero-copy > .button { animation-delay: .24s; }
+  .hero-foot { animation-delay: .32s; }
+  .round-label { animation: studio-seal 1.2s .2s ease-out both; }
+  .hero-mini { animation: studio-arrive 1s .25s backwards; }
+  .reveal { --arrival-delay: 0ms; }
+  .reveal.will-reveal { transform: translateY(22px); transition: transform .7s cubic-bezier(.2,.75,.2,1); transition-delay: var(--arrival-delay); }
+  .reveal.is-visible { transform: none; }
+  .product-card { animation: none; transition: box-shadow .3s, border-color .3s; }
+  .product-arrival { min-width: 0; display: flex; }
+  .product-arrival > .product-card { width: 100%; }
+  .category-story { transition: box-shadow .35s, border-color .35s; }
+  .bag span { animation: studio-pop .45s ease-out; }
+  .filters button, .footer-icons a, .gallery-thumbnails button { transition: background .25s, border-color .25s, box-shadow .25s, transform .25s; }
+  .filters button.active { animation: studio-pop .35s ease-out; }
+  .field input, .field textarea, .field select { transition: border-color .2s, box-shadow .2s; }
+  .field:focus-within input, .field:focus-within textarea, .field:focus-within select { border-color: #17577f; box-shadow: 0 0 0 3px #17577f12; }
+  .bag-line, .payment-layout, .success { animation: studio-arrive .45s ease-out; }
+  @media (hover: hover) and (pointer: fine) {
+    .product-card:hover, .product-card:focus-within { border-color: #699ab8; box-shadow: 0 14px 30px #17384d16; }
+    .category-story:hover { border-color: #699ab8; }
+    .footer-icons a:hover { transform: translateY(-4px) rotate(-5deg); }
+    .gallery-thumbnails button:hover { transform: translateY(-3px); }
+    .button { position: relative; overflow: hidden; isolation: isolate; }
+    .button::after { content: ''; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(110deg, transparent 25%, #ffffff25 50%, transparent 75%); transform: translateX(-120%); transition: transform .65s; }
+    .button:hover::after { transform: translateX(120%); }
+  }
+}
+@keyframes studio-arrive { from { translate: 0 16px; } to { translate: 0 0; } }
+@keyframes studio-pop { 0% { scale: .9; } 55% { scale: 1.08; } 100% { scale: 1; } }
+@keyframes studio-seal { from { rotate: -18deg; scale: .9; } to { rotate: 0deg; scale: 1; } }
+@keyframes studio-orbit { from { transform: translate(-30px, 30px) scale(.9); } to { transform: none; } }
+@media (prefers-reduced-motion: reduce) {
+  .reveal.will-reveal { transform: none; }
+}
