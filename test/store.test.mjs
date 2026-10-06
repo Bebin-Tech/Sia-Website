@@ -271,6 +271,20 @@ test("persistent order lifecycle, authentication, validation and product managem
     const persisted = await call("/api/admin/orders", { authenticated: true });
     assert.equal(persisted.data[0].status, "Confirmed");
     assert.equal(persisted.data[0].reference, order.data.reference);
+    const secondId=crypto.randomUUID();
+    await app.db.prepare("INSERT INTO orders SELECT ?,?,created,status,customer,items,?,payload_hash FROM orders WHERE id=?").run(secondId,'SIAA-TEST-BULK',crypto.randomUUID(),id);
+    const deletion={ids:[id,secondId],confirm:true};
+    assert.equal((await call('/api/admin/orders',{method:'DELETE',body:deletion})).status,401);
+    const noCsrf=await fetch(base+'/api/admin/orders',{method:'DELETE',headers:{Cookie:cookie,Origin:base,'Content-Type':'application/json'},body:JSON.stringify(deletion)});
+    assert.equal(noCsrf.status,403);
+    assert.equal((await call('/api/admin/orders',{method:'DELETE',authenticated:true,body:{ids:[id]}})).status,400);
+    assert.equal((await call('/api/admin/orders',{method:'DELETE',authenticated:true,body:{ids:[id,'missing'],confirm:true}})).status,409);
+    assert.equal((await call('/api/admin/orders',{authenticated:true})).data.length,2);
+    assert.equal((await call('/api/admin/orders',{method:'DELETE',authenticated:true,body:deletion})).data.deleted,2);
+    assert.equal((await call('/api/admin/orders',{authenticated:true})).data.length,0);
+    assert.equal((await app.db.prepare('SELECT COUNT(*) AS n FROM payment_reports WHERE order_id=?').get(id)).n,0);
+    assert.equal((await app.db.prepare('SELECT COUNT(*) AS n FROM notifications WHERE order_id=?').get(id)).n,0);
+    assert.equal((await call('/api/orders/payment-details',{method:'POST',body:{reference:order.data.reference,accessKey:body.idempotencyKey}})).status,403);
     await call("/api/admin/logout", {
       method: "POST",
       authenticated: true,

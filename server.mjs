@@ -595,6 +595,19 @@ export async function createApp({
             );
           return json(res, 201, { image: "/uploads/" + filename });
         }
+        if (path === "/api/admin/orders" && method === "DELETE") {
+          const b=await body(req);
+          if(b.confirm!==true || !Array.isArray(b.ids) || b.ids.length<1 || b.ids.length>500 || b.ids.some(id=>typeof id!=='string'||id.length>100) || new Set(b.ids).size!==b.ids.length) fail("Select valid requests and confirm permanent deletion.");
+          const placeholders=b.ids.map(()=>'?').join(',');
+          const existing=await db.prepare(`SELECT id FROM orders WHERE id IN (${placeholders})`).all(...b.ids);
+          if(existing.length!==b.ids.length) fail("Some requests no longer exist. Refresh the list and select again.",409);
+          await db.batch([
+            {sql:`DELETE FROM payment_reports WHERE order_id IN (${placeholders})`,args:b.ids},
+            {sql:`DELETE FROM notifications WHERE order_id IN (${placeholders})`,args:b.ids},
+            {sql:`DELETE FROM orders WHERE id IN (${placeholders})`,args:b.ids}
+          ]);
+          return json(res,200,{deleted:existing.length});
+        }
         if (path === "/api/admin/orders" && method === "GET")
           return json(
             res,
