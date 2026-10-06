@@ -1,3 +1,4 @@
+import {addFigures} from './figures-update.mjs';
 import {addRoundArt} from './round-art-update.mjs';
 import {addBouquets} from './bouquets-update.mjs';
 import {addStudioBatch} from './studio-batch-update.mjs';
@@ -56,6 +57,7 @@ export async function createApp({
   await addStudioBatch(db);
   await addBouquets(db);
   await addRoundArt(db);
+  await addFigures(db);
   const withPair = async p => ({...p,pair_price:(await db.prepare("SELECT pair_price FROM keychain_prices WHERE product_id=?").get(p.id))?.pair_price ?? null});
   const withImages = async (p) => ({
     ...await withPair(p),
